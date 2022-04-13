@@ -119,11 +119,11 @@ Navigate to _File > Options > Trust Center > Trust Center Settings_
 
 The default settings of the Trust Center for macros is "Disable all macros with notification"
 
-![Trust Center default](/OSEP/Client-Side-Code-Execution-With-Office/images/trust-center-default.png)
+![Trust Center default](/images/trust-center-default.png)
 
 The Protected View has the following things by default
 
-![Protected View](/OSEP/Client-Side-Code-Execution-With-Office/images/trust-center-protected.png)
+![Protected View](/images/trust-center-protected.png)
 
 ## Opening cmd.exe from Macros
 
@@ -227,7 +227,7 @@ Explanation:
 - An autotext template can be added by navigating to the _Insert > Quick Parts > AutoTexts_
 - Create an autotext and save it to the gallery.
 - Now we will use the macros to replace the contents of the document with the one stored in AutoText gallery.
-- Code
+- Code:
 
 ```
     Sub Document_Open()
