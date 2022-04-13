@@ -583,7 +583,13 @@ Explanation:
 8. A thread is created using the _CreateThread_ and is executed at the address where the allocation is done.
 9. The _WaitForSingleObject_ is called with the arguments $thandle which specifies the created thread and the time (0xFFFFFFFF), which specifies that the thread never quit unless we exit our shell.
 
+&nbsp;
+
 > Note : In-Depth explaination of the _VirtualAlloc_ and _CreateThread_ can be found [here](#in-memory-shellcode-runner-in-vba)
+
+> Documentation :
+>
+> - https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.copy?view=net-6.0
 
 &nbsp;
 
