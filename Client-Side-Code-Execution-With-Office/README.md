@@ -245,3 +245,5 @@ Explanation:
         Where:=Selection.Range, RichText:=True
     End Sub
 ```
+
+## Shellcode Execution in Word Memory
