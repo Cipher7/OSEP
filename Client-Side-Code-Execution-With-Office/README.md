@@ -119,11 +119,11 @@ Navigate to _File > Options > Trust Center > Trust Center Settings_
 
 The default settings of the Trust Center for macros is "Disable all macros with notification"
 
-![Trust Center default](Client-Side-Code-Execution-With-Office/images/trust-center-default.png)
+![Trust Center default](images/trust-center-default.png)
 
 The Protected View has the following things by default
 
-![Protected View](Client-Side-Code-Execution-With-Office/images/trust-center-protected.png)
+![Protected View](images/trust-center-protected.png)
 
 ## Opening cmd.exe from Macros
 
