@@ -83,7 +83,7 @@ Code :-
 
 Macros in Word can be added by navigating to Macros option in the View Tab. Now select the current document from the drop down and give the Macro a name and then add it. The macro will be written in VBA (Visual Basic for Applications) Script.
 
-![VBA Editor in Word](Client-Side-Code-Execution-With-Office/images/vba-editor.png)
+![VBA Editor in Word](images/vba-editor.png)
 
 &nbsp;
 
