@@ -8,4 +8,23 @@
     - Win32 API
     - Windows Registry
 - Client Side Code Execution with Office
+  - Droppers
+  - HTML Smuggling
+  - Phishing With Microsoft Office
+    - Basic Macro Payloads
+    - Security Settings of Microsoft Office
+    - Opening cmd.exe from macros
+    - Powershell with Macros
+    - Phishing user into disabling protected view and Enabling Macros
+  - Shellcode Execution in word Memory
+    - Interacting with Win32 API from VBA
+    - In-Memory Shellcode runner in VBA
+  - Shellcode Runner using Powershell
+    - Calling Win32 API from Powershell
+    - Shellcode Runner in Powershell
+    - In-Memory Shellcode Runner in Powershell
+      - Problem with Add-Type
+      - Leveraging UnsafeNativemethods
+      - Reflection Shellcode Runner in Powershell
+  - Working With Proxy
 - Client Side Code Execution with Windows Script Host
