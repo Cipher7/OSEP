@@ -83,7 +83,7 @@ Code :-
 
 Macros in Word can be added by navigating to Macros option in the View Tab. Now select the current document from the drop down and give the Macro a name and then add it. The macro will be written in VBA (Visual Basic for Applications) Script.
 
-![VBA Editor in Word](/OSEP/Client-Side-Code-Execution-With-Office/images/vba-editor.png)
+![VBA Editor in Word](Client-Side-Code-Execution-With-Office/images/vba-editor.png)
 
 &nbsp;
 
@@ -119,11 +119,11 @@ Navigate to _File > Options > Trust Center > Trust Center Settings_
 
 The default settings of the Trust Center for macros is "Disable all macros with notification"
 
-![Trust Center default](/images/trust-center-default.png)
+![Trust Center default](Client-Side-Code-Execution-With-Office/images/trust-center-default.png)
 
 The Protected View has the following things by default
 
-![Protected View](/images/trust-center-protected.png)
+![Protected View](Client-Side-Code-Execution-With-Office/images/trust-center-protected.png)
 
 ## Opening cmd.exe from Macros
 
