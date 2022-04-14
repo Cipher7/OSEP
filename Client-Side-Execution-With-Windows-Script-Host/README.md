@@ -80,6 +80,7 @@ The command for compiling the dll to js file is :
 ![DotNetToJscript](./images/DotNetToJscript.png)
 
 Source Code of ExampleAssembly can be found [here](./C%23%20Programs/ExampleAssembly.cs)
+Compiled DLL can be found [here](./Compiled%20binaries/ExampleAssembly.dll)
 
 Explanation :
 
