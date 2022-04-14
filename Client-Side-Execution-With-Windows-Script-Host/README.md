@@ -150,7 +150,7 @@ Explanation :
 
 C# code can be found [here](./C%23%20Programs/JscriptShellcode.cs)
 
-Compile DLL can be found [here](./Compiled%20binaries/JscriptShellcode.dll)
+Compiled DLL can be found [here](./Compiled%20binaries/JscriptShellcode.dll)
 
 Jscript can be found [here](./JScript/JscriptShellcode.js)
 
