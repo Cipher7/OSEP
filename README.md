@@ -28,3 +28,11 @@
       - Reflection Shellcode Runner in Powershell
   - Working With Proxy
 - [Client Side Code Execution with Windows Script Host](./Client-Side-Execution-With-Windows-Script-Host/README.md)
+  - Basic Dropper in Jscript
+  - Jscript and C#
+  - DotNetToJscript
+  - Win32 API calls from C#
+  - Shellcode Runner in C# using Win32 API
+  - Jscript Shellcode Runner
+  - SharpShooter
+  - Reflective Load of Win32 API for In-Memory Powershell
