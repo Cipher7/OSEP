@@ -27,4 +27,4 @@
       - Leveraging UnsafeNativemethods
       - Reflection Shellcode Runner in Powershell
   - Working With Proxy
-- Client Side Code Execution with Windows Script Host
+- [Client Side Code Execution with Windows Script Host](./Client-Side-Execution-With-Windows-Script-Host/README.md)
