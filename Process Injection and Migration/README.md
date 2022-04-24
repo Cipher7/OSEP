@@ -1,4 +1,6 @@
-# Theory
+# Process Injection
+
+## Process Injection Theory
 
 Process : A Container that is created to house a running application. Each Windows Process maintains it's own virtual space, interaction between these spaces can take place with the help of Win32 APIs
 
@@ -12,7 +14,7 @@ Win32 APIs : _OpenProcess_ , _VirtualAllocEx_ , _WriteProcessMemory_ and _Create
 
 &nbsp;
 
-# Process Injection in C#
+## Process Injection in C#
 
 We'll be using 4 Win32 APIs from Kernel32.dll -
 
