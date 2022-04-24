@@ -193,4 +193,12 @@ Explanation :
   - The first argument specifies the process handle created.
   - The fourth handle specifies the address to the allocated memory.
 
+> Documentation :
+>
+> - https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/out-parameter-modifier
+
 &nbsp;
+
+# DLL Injection
+
+## DLL Injection Theory
