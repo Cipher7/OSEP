@@ -301,8 +301,6 @@ Explanation :
 
 # Reflective DLL Injection
 
-## Theory
-
 - In DLL injection, the DLL is loaded from the disk to the remote process. Writing DLL to the disk can trigger AV and can compromise out attack.
 - A workaround to this problem would be to implement Reflective DLL injection. The DLL is injected to the victim process directly from memory rather than from disk.
 - This basically maps the DLL's Portable Executable format content into the memory.
