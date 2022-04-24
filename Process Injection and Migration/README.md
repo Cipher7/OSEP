@@ -298,3 +298,7 @@ Explanation :
 > - https://codingvision.net/c-inject-a-dll-into-a-process-w-createremotethread
 
 &nbsp;
+
+# Reflective DLL Injection
+
+## Theory
