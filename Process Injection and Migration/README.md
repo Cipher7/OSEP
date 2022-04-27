@@ -332,4 +332,26 @@ Powershell Code to perform Reflective DLL Injection
 
 # Process Hollowing
 
+- The issue in the above method of process injection is that we may still be detected as we generate network traffic from programs such as explorer and notepad.
+- We can migrate to svchost to mask our identity as it generates network activity.
+- The problem here is svchost runs by default at SYSTEM integrity level, we cannot inject into such processes.
+- We can solve this problem by using a method called **Process Hollowing**, in which we start the processes as suspended and then modify it before it starts execution.
+
 ## Theory
+
+- During the creation of a process using _CreateProcess_ API, we can set the CREATE_SUSPENDED to create a new suspended process.
+- When a process is created using _CreateProcess_ , the OS does a few things :-
+  - Creates virtual memory space for the process
+  - Allocates stack along with Thread Environment Block(TEB) and Process Environment Block(PEB)
+  - Loads the required EXE and DLL to the memory
+- Once the above tasks are done, the OS will create a thread to execute the code. If we suppply the CREATE_SUSPENDED flag, then the execution will stop just before it runs the first instruction.
+- Now to locate the entrypoint of the executable, we can use the _ZwQueryInformationProcess_ API to retrive the PEB.
+- From the PEB, we can obtain the base address of the process and use this to parse the PE Headers and locate the entrypoint.
+- We can find the base address at an offset of 0x10 into the PEB
+- After the _ZwQueryInformationProcess_ yields the address of the PEB, we can use the _ReadProcessMemory_ API to read the contents of the PEB at offset 0x10
+- First we read the e_lfanew field at offset 0x3C, this contains the offset from the beginning of the PE file to the PE Header.
+- We then read the Relative Virtual Address (RVA) of the Entrypoint at offset 0x28 from the PE Header, this needs to be added to the base address of the remote process to obtain the absolute memory address.
+- Once we have the entrypoint of the remote process, we can use the WriteProcessMemory to overwrite the original contents of the executable.
+- We can then resume the execution of the thread.
+
+> All PE Files follow a standard format, this helps us to predict where to find the required offsets.
