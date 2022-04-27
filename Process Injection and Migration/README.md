@@ -355,3 +355,13 @@ Powershell Code to perform Reflective DLL Injection
 - We can then resume the execution of the thread.
 
 > All PE Files follow a standard format, this helps us to predict where to find the required offsets.
+
+> Documentation :
+>
+> - https://en.wikipedia.org/wiki/Win32_Thread_Information_Block
+> - https://en.wikipedia.org/wiki/Process_Environment_Block
+> - https://en.wikipedia.org/wiki/Address_space_layout_randomization
+> - https://docs.microsoft.com/en-us/windows/win32/procthread/zwqueryinformationprocess
+> - https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-readprocessmemory
+> - https://gist.github.com/smgorelik/9a80565d44178771abf1e4da4e2a0e75
+> - https://github.com/sbridgens/ProcessHollowing
