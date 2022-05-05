@@ -46,3 +46,9 @@
   - Reflective DLL Injection
   - Process Hollowing
 - [Antivirus Evasion](./Antivirus%20Evasion/README.md)
+
+&nbsp;
+
+# Disclaimer
+
+This repo is still work in progress. Any errors or suggestions can be conveyed by raising an issue. You can contact me directly on my [Discord](https://discordapp.com/users/706779776349765722) or [Twitter](https://twitter.com/xCipher007)
