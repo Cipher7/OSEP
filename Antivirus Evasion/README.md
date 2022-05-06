@@ -28,7 +28,7 @@ To bypass Signature based scans which look for particular byte strings in the fi
 
 To do this, we can split the binary into many pieces and perform scans on each one of them. We can recursively do this to replace all the bytes which trigger the AV with a null byte. We also have to set the last byte to 0xFF to bypass the complete file getting detected.
 
-To split the binary, we can use the powershell tool **Find-AVSignature**. Example command :-
+To split the binary, we can use the powershell tool [Find-AVSignature](./../Tools/AV%20Evasion/Find-AVSignature.ps1). Example command :-
 
     Find-AVSignature -StartByte 0 -EndByte max -Interval 100 -Path mal.exe -OutPath mal_1 -Verbose -Force
 
@@ -109,3 +109,136 @@ This will however get detected due to it's static decryption process. Heurestic 
 &nbsp;
 
 # Bypasssing AV with C#
+
+## Caeser cipher with XOR-based and AND-based encryption
+
+Let us take a custom written simple C# shellcode runner.
+
+You can find the program [here](./C%23%20Programs/ShellcodeRunner.cs)
+
+Explanation :
+
+- We create a simple C# shellcode runner which uses the Win32 APIs.
+- We first allocate space, copy the shellcode into it and then execute it.
+- The _WaitForSingleObject_ API prevents the shell from exiting as soon as it is created.
+- Detailed explanation of different APIs can be found [here](./../Client-Side-Code-Execution-With-Office/README.md#in-memory-shellcode-runner-in-vba)
+
+We have encrypted it with Caser Cipher along with Xor based encryption. You can find the code [here](./C%23%20Programs/XorEncoder.cs)
+
+The same program but with AND encryption can be found [here](./C%23%20Programs/AndEncoder.cs)
+
+&nbsp;
+
+> RESOURCES
+>
+> - https://en.wikipedia.org/wiki/XOR_cipher
+> - http://practicalcryptography.com/ciphers/caesar-cipher/
+
+&nbsp;
+
+## Sleep Timers
+
+To add on to the above encrpytion methods, we can also add sleep timers to mess with the heurestic based detection. This can easily be implemented using the _Sleep_ Win32 API from _kernel32.dll_
+
+Simple implementation of _Sleep_ Win32 API :-
+
+    ...
+    [DllImport("kernel32.dll")]
+    static extern void Sleep(uint dwMilliseconds);
+
+    static void Main(string[] args)
+    {
+        DateTime t1 = DateTime.Now;
+        Sleep(5000);
+        double t2 = DateTime.Now.Subtract(t1).TotalSeconds;
+        if(t2 < 5)
+        {
+            return;
+        }
+    }
+    ...
+
+Explanation :
+
+- We first use the P/Invoke command to import the API
+- We fetch the current time and store it in variable t1
+- We then call the _Sleep_ API with 5000 ms (5 sec) as it's argument
+- We then get the current time again and subtract it from t1 and store the result in t2
+- If t2 is lesser than 5 seconds, then do nothing and exit out from the program.
+- In heurestic based scanning, if the AV just skips over sleep statements. Then this is a good way to prevent that from happening.
+
+> Sleep timers aren't as effective as they used to be. It's a plus point to integrate this into the program but effectiveness cannot be gauranteed.
+
+> RESOURCES
+>
+> - https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep
+> - https://docs.microsoft.com/en-us/dotnet/api/system.datetime?view=netframework-4.8
+
+&nbsp;
+
+## Non-Emulated APIs
+
+AV Emulators stimulate the most common APIs, they however cannot process or execute non-emulated APIs and hence crash.
+A simple example is the _VirtualAllocExNuma_ (Numa suffix which specifies core optimizations for multi core processors), we can use this instead of _VirtualAllocEx_ .
+
+Function prototype of **_VirtualAllocEx_** :
+
+    LPVOID VirtualAllocEx(
+        HANDLE hProcess,
+        LPVOID lpAddress,
+        SIZE_T dwSize,
+        DWORD flAllocationType,
+        DWORD flProtect
+    );
+
+Function prototype of **_VirtualAllocExNuma_** :
+
+    LPVOID VirtualAllocExNuma(
+        HANDLE hProcess,
+        LPVOID lpAddress,
+        SIZE_T dwSize,
+        DWORD flAllocationType,
+        DWORD flProtect,
+        DWORD nndPreferred
+    );
+
+The only difference is the extra argument _nndPreferred_ in _VirtualAllocExNuma_ which specifies where the physical memory should reside. We can set this options to "0" to use the first node.
+
+P/Invoke statement :
+
+    [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+    static extern IntPtr VirtualAllocExNuma(IntPtr hProcess, IntPtr lpAddress, uint dwSize, UInt32 flAllocationType, UInt32 flProtect, UInt32 nndPreferred);
+
+&nbsp;
+
+Code to check for AV Sandbox :
+
+    ...
+    [DllImport("kernel32.dll")]
+    static extern IntPtr GetCurrentProcess();
+
+    IntPtr mem = VirtualAllocExNuma(GetCurrentProcess(), IntPtr.Zero, 0x1000, 0x3000, 0x4, 0);
+    if(mem == null)
+    {
+        return;
+    }
+    ...
+
+Explanation :
+
+- We first import the Win32 API for _VirtualAllocExNuma_ and the _GetCurrentProcess_
+- We then start allocating the memory using the API
+- If an AV is running the code in sandbox, then the API would not be executed and the value of the variable mem will be null.
+- In this case the program would stop execution
+
+&nbsp;
+
+> RESOURCES
+>
+> - https://docs.microsoft.com/en-gb/windows/win32/procthread/numa-support
+> - https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocexnuma
+> - https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess
+
+&nbsp;
+
+# AV Bypass with Office
