@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Program
 {
-    public class CaeserEncoder
+    public class CaesarEncoder
     {
         public static void Main(string[] args)
         {
@@ -16,7 +16,7 @@ namespace Program
             byte[] encoded = new byte[buf.Length];
             for (int i = 0; i < buf.Length; i++)
             {
-                encoded[i] = (byte)(((uint)buf[i] + 5 ) & 0xff);  // Caeser Shift of 5 with key as 0xff
+                encoded[i] = (byte)(((uint)buf[i] + 5 ) & 0xff);  // Caesar Shift of 5 with key as 0xff
             }
 
             StringBuilder hex = new StringBuilder(encoded.Length * 2);

@@ -52,7 +52,7 @@
     - Encoders
     - Encrypters
   - Bypassing AV with C#
-    - Caeser Cipher
+    - Caesar Cipher
     - Sleep Timers
     - Non-Emulated APIs
   - Bypassing AV with Office

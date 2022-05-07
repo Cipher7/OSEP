@@ -110,7 +110,7 @@ This will however get detected due to it's static decryption process. Heurestic 
 
 # Bypasssing AV with C#
 
-## Caeser cipher with XOR-based and AND-based encryption
+## Caesar cipher with XOR-based and AND-based encryption
 
 Let us take a custom written simple C# shellcode runner.
 
@@ -125,7 +125,7 @@ Explanation :
 
 We have encrypted it with Caser Cipher along with Xor based encryption. You can find the code [here](./C%23%20Programs/XorEncoder.cs)
 
-The same program but with simple caeser cipher can be found [here](./C%23%20Programs/CaeserEncoder.cs)
+The same program but with simple Caesar cipher can be found [here](./C%23%20Programs/CaesarEncoder.cs)
 
 &nbsp;
 
@@ -254,7 +254,7 @@ Explanation :
 - Next we copy byte by byte of our shellcode to the allocated buffer and then execute it
 - The Document_Open and AutoOpen executes the macro as soon as the document is opened without user intervention.
 
-For encrypting this shellcode, we will use the same Caeser Cipher encryption routine. The program to encrypt the shellcode can be found [here](./C%23%20Programs/vba_encrypt.cs)
+For encrypting this shellcode, we will use the same Caesar Cipher encryption routine. The program to encrypt the shellcode can be found [here](./C%23%20Programs/vba_encrypt.cs)
 
 Explanation :
 

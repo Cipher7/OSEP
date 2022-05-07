@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Program
 {
-    public class vba_encrypt   // Caeser Cipher Encryption
+    public class vba_encrypt   // Caesar Cipher Encryption
     {
         public static void Main(string[] args)
         {
