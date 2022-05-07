@@ -46,8 +46,23 @@
   - Reflective DLL Injection
   - Process Hollowing
 - [Antivirus Evasion](./Antivirus%20Evasion/README.md)
-
-&nbsp;
+  - Overview
+  - Signature Based Detection
+  - Bypassing AV with Metasploit
+    - Encoders
+    - Encrypters
+  - Bypassing AV with C#
+    - Caeser Cipher
+    - Sleep Timers
+    - Non-Emulated APIs
+  - Bypassing AV with Office
+    - AV Bypass with VBA
+    - VBA Stomping
+    - Powershell in VBA
+    - Dechaining with WMI
+    - Obfuscating VBA
+- [Advanced Antivirus Evasion]()
+  &nbsp;
 
 # Disclaimer
 
