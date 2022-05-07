@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Program
 {
-    public class AndEncoder
+    public class CaeserEncoder
     {
         public static void Main(string[] args)
         {

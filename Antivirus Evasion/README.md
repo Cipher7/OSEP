@@ -125,7 +125,7 @@ Explanation :
 
 We have encrypted it with Caser Cipher along with Xor based encryption. You can find the code [here](./C%23%20Programs/XorEncoder.cs)
 
-The same program but with AND encryption can be found [here](./C%23%20Programs/AndEncoder.cs)
+The same program but with simple caeser cipher can be found [here](./C%23%20Programs/CaeserEncoder.cs)
 
 &nbsp;
 
