@@ -13,7 +13,7 @@ In the Intel assembly languages, both the 32-bit and the 64-bit are quite simila
 
 Memory space supported :
 
-32 bit - 2 GB
+32 bit - 2 GB \
 64 bit - 128 TB
 
 The registers in the 32-bit environment can be found in the below table : \
@@ -66,8 +66,8 @@ We can also view all the registers with the 'r' command.
 
 We can get the detailed view of the registers using the dd, dc and dq command.
 
-dd - 32 bit
-dc - 32 bit with ASCII
+dd - 32 bit \
+dc - 32 bit with ASCII \
 dq - 64 bit
 
 ![detailed-view](./images/Windbg/detailed-view.png)
@@ -85,3 +85,5 @@ Finally we can also modify the stack with the 'ed' command.
 > - https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile?redirectedfrom=MSDN
 
 &nbsp;
+
+# AntiMalware Scan Interface
