@@ -266,3 +266,5 @@ Now tring to bypass this by splitting and concatenating the string :
 > - https://www.frida.re/
 
 &nbsp;
+
+# Bypassing AMSI with Reflection
