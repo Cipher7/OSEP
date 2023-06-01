@@ -276,3 +276,5 @@ Now tring to bypass this by splitting and concatenating the string :
 &nbsp;
 
 # Bypassing AMSI with Reflection
+
+## Messing around with AMSI functions
