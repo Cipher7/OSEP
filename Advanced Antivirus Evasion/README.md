@@ -16,18 +16,18 @@ Memory space supported :
 32 bit - 2 GB \
 64 bit - 128 TB
 
-The registers in the 32-bit environment can be found in the below table : \
+The registers in the 32-bit environment can be found in the below table : 
 
 ![32-bit-cpu-registers](./images/Windbg/32-bit.png)
 
-The registers in the 64-bit environment can be found in the below table : \
+The registers in the 64-bit environment can be found in the below table : 
 
 ![64-bit-cpu-registers](./images/Windbg/64-bit.png)
 
 The most important registers in the 32-bit are the ESP and the EIP. They are the Stack pointer and the Instruction pointer. Their 64-bit counterparts are the RSP and the RIP.
 
 ESP/RSP - Memory address to the top of the stack
-RSP/RIP - Address of the assembly instuction to be executed.
+EIP/RIP - Address of the assembly instruction to be executed.
 
 Two types of instructions :
 
@@ -46,9 +46,17 @@ Go to File > Start Debugging > Attach to a process
 
 Below we can see the interface with the attached process. The process execution is paused. Now let us set a breakpoint at the WriteFile Function. The breakpoint will be encountered when the process writes something to the file.
 
+> *bp* is used to set breakpoint
+> *kernel32* is the dynamic link library(DLL) which exports the *WriteFile* function
+> *WriteFile* is the function that gets called when anything is written onto the disk
+> *g* is used to resume the execution after the breakpoint has been hit
+> *p* is used to step through a single assembly instruction at a time
+> *r* is used to view all registers
+
+
 ![write-file-breakpoint](./images/Windbg/create-breakpoint.png)
 
-Now resume the execution. Write something on notepas to ttrigger the breakpoint.
+Now resume the execution. Write something on notepad to trigger the breakpoint.
 
 ![breakpoint-hit](./images/Windbg/breakpoint-hit.png)
 
@@ -66,8 +74,8 @@ We can also view all the registers with the 'r' command.
 
 We can get the detailed view of the registers using the dd, dc and dq command.
 
-dd - 32 bit \
-dc - 32 bit with ASCII \
+dd - 32 bit 
+dc - 32 bit with ASCII 
 dq - 64 bit
 
 ![detailed-view](./images/Windbg/detailed-view.png)
@@ -84,7 +92,7 @@ Finally we can also modify the stack with the 'ed' command.
 > - https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/methods-of-controlling-breakpoints
 > - https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile?redirectedfrom=MSDN
 
-&nbsp;
+
 
 # AntiMalware Scan Interface
 

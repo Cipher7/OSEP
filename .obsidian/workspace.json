@@ -4,19 +4,15 @@
     "type": "split",
     "children": [
       {
-        "id": "8482a69ca1081a52",
+        "id": "056cede136aa8aca",
         "type": "tabs",
         "children": [
           {
-            "id": "105ec597a03fc203",
+            "id": "6469b7a9940c7fb6",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Advanced Antivirus Evasion/README.md",
-                "mode": "preview",
-                "source": false
-              }
+              "type": "empty",
+              "state": {}
             }
           }
         ]
@@ -93,7 +89,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Advanced Antivirus Evasion/README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -110,7 +105,6 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Advanced Antivirus Evasion/README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -132,9 +126,7 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {
-                "file": "Advanced Antivirus Evasion/README.md"
-              }
+              "state": {}
             }
           },
           {
@@ -163,13 +155,14 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "4bc051a603902373",
+  "active": "6469b7a9940c7fb6",
   "lastOpenFiles": [
-    "Process Injection and Migration/README.md",
+    "2023-06-01.md",
+    "Advanced Antivirus Evasion/README.md",
     "README.md",
+    "Process Injection and Migration/README.md",
     "Client-Side-Code-Execution-With-Office/README.md",
     "Operating-System-and-Programming-Fundamentals/README.md",
-    "Advanced Antivirus Evasion/README.md",
     "Client-Side-Execution-With-Windows-Script-Host/README.md",
     "Antivirus Evasion/README.md"
   ]
