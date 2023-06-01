@@ -104,7 +104,7 @@ The AMSI interacts with the Antivirus software with Remote Procedure Calls, RPC.
 
 ![flowchart](./images/AMSI/flowchart.png)
 
-The unmanaged DLL, AMSI.dll, is loaded into every powershell process and provides a number of APIs which powershell uses. The APIs exported by AMSI are _AmsiInitialize_, _AmsiOpenSession_, _AmsiScanString_, _AmsiScanBuffer_ and _AmsiCloseSession_.
+The unmanaged DLL, AMSI.dll, is loaded into every PowerShell process and provides a number of APIs which PowerShell uses. The APIs exported by AMSI are _AmsiInitialize_, _AmsiOpenSession_, _AmsiScanString_, _AmsiScanBuffer_ and _AmsiCloseSession_.
 
 **_AmsiInitialize_**
 
@@ -184,9 +184,9 @@ Explanation :
 
 ## Dynamic Analysis of AMSI with Frida
 
-Frida is a debugging tool with a dynamic intrumentation framework. It has a python backend with a javascript frontend.
+Frida is a debugging tool with a dynamic instrumentation framework. It has a python backend with a JavaScript frontend.
 
-Command to install frida :
+Command to install Frida :
 
     pip install frida-tools
 
@@ -198,7 +198,7 @@ The path for me is :
 
 This can vary according to your user and where you have python installed.
 
-Now open powershell and get it's process id with the command :
+Now open PowerShell and get it's process id with the command :
 
     Get-Process | Select-Object -Property Id,ProcessName | Where-Object {$_.ProcessName -like "*power*"}
 
@@ -216,7 +216,7 @@ Flags :
 
 -p : process id \
 -x : the DLL to trace \
--i : specific API's to trace \
+-i : specific API's to trace
 
 Now when we enter any string, we can see the API calls being made :
 
