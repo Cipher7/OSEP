@@ -46,12 +46,12 @@ Go to File > Start Debugging > Attach to a process
 
 Below we can see the interface with the attached process. The process execution is paused. Now let us set a breakpoint at the WriteFile Function. The breakpoint will be encountered when the process writes something to the file.
 
-> *bp* is used to set breakpoint
-> *kernel32* is the dynamic link library(DLL) which exports the *WriteFile* function
-> *WriteFile* is the function that gets called when anything is written onto the disk
-> *g* is used to resume the execution after the breakpoint has been hit
-> *p* is used to step through a single assembly instruction at a time
-> *r* is used to view all registers
+> *bp* is used to set breakpoint \
+> *kernel32* is the dynamic link library(DLL) which exports the *WriteFile* function \
+> *WriteFile* is the function that gets called when anything is written onto the disk \
+> *g* is used to resume the execution after the breakpoint has been hit \
+> *p* is used to step through a single assembly instruction at a time \
+> *r* is used to view all registers \
 
 
 ![write-file-breakpoint](./images/Windbg/create-breakpoint.png)
@@ -92,7 +92,7 @@ Finally we can also modify the stack with the 'ed' command.
 > - https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/methods-of-controlling-breakpoints
 > - https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile?redirectedfrom=MSDN
 
-&nbsp
+&nbsp;
 
 # AntiMalware Scan Interface
 
