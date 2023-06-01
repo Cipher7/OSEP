@@ -92,15 +92,15 @@ Finally we can also modify the stack with the 'ed' command.
 > - https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/methods-of-controlling-breakpoints
 > - https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile?redirectedfrom=MSDN
 
-
+&nbsp
 
 # AntiMalware Scan Interface
 
 ## Basic Understanding
 
-The AntiMalware Scan Interface, aka AMSI was introduced by Microsoft to allow runtime inspection of powershell commands and scripts. It captures all scripts, like C#, VBA, powershell etc and send them to the AV for scanning.
+The AntiMalware Scan Interface, aka AMSI was introduced by Microsoft to allow runtime inspection of PowerShell commands and scripts. It captures all scripts, like C#, VBA, PowerShell etc. and send them to the AV for scanning.
 
-The AMSI interaacts with the AntiVirus software with Remote Procedure Calls, RPC.
+The AMSI interacts with the Antivirus software with Remote Procedure Calls, RPC.
 
 ![flowchart](./images/AMSI/flowchart.png)
 
